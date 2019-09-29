@@ -3,7 +3,7 @@ package collector
 import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
-	"kongExporter/libs"
+	"kong-prometheus-exporter/libs"
 	"strconv"
 )
 

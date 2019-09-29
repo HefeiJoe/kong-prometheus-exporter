@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"kongExporter/collector"
-	"kongExporter/libs"
+	"kong-prometheus-exporter/collector"
+	"kong-prometheus-exporter/libs"
 	"net/http"
 )
 
