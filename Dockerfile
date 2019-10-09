@@ -1,6 +1,6 @@
 FROM golang:latest as build-env
-WORKDIR /go/src/kongExporter
-ADD . /go/src/kongExporter
+WORKDIR /go/src/kong-prometheus-exporter
+ADD . /go/src/kong-prometheus-exporter
 RUN go build -o /go/app
 
 FROM harbor.wise-paas.io/distroless/base:latest as prod-env
