@@ -121,7 +121,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	ips := libs.GetKongPodIP(namespace)
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
-		url = "http://13.76.2.24:9542/metrics"
 		metricsResponse :=Get(url)
 		response = response+ metricsResponse
 	}
