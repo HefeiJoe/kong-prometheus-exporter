@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus"
 	"kong-prometheus-exporter/libs"
 	"log"
@@ -122,8 +123,12 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=Get(url)
+		fmt.Println(url)
 		response = response+ metricsResponse
 	}
+	fmt.Println("response",response)
+	fmt.Println("*************************")
+	fmt.Println(response)
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {
