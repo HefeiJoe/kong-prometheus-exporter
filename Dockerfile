@@ -1,10 +1,10 @@
 FROM golang:latest as build-env
-WORKDIR /go/src/kongExporter
-ADD . /go/src/kongExporter
-RUN go build -o /go/app
+WORKDIR $GOPATH/src/kong-prometheus-exporter
+ADD . $GOPATH/src/kong-prometheus-exporter
+RUN go build .
 
 FROM harbor.wise-paas.io/distroless/base:latest as prod-env
-WORKDIR /go/
-COPY --from=build-env /go/app .
+WORKDIR $GOPATH/
+COPY --from=build-env $GOPATH/src/kong-prometheus-exporter .
 EXPOSE 8080
-CMD ["./app"]
+CMD ["./kong-prometheus-exporter"]
