@@ -1,9 +1,9 @@
 package collector
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"regexp"
 	"strings"
 )
 
@@ -19,27 +19,15 @@ func Get(url string) (response string) {
 	return string(body)
 }
 
-func GetMetrics(url string)  (string, string) {
-	var metrics_key string
-	var metrics_value string
-	metricsResponse :=Get(url)
-	if metricsResponse != "" {
-		//fmt.Print(metricsResponse)
-		flysnowRegexp := regexp.MustCompile(`kong_http_status.*\d`)
-		params := flysnowRegexp.FindStringSubmatch(metricsResponse)
-		//fmt.Print(params)
-
-		for _,param :=range params {
-			//fmt.Println(param)
-			metrics := strings.Split(param, " ")
-			//fmt.Print(metrics)
-			metrics_key = metrics[0]
-			metrics_value = metrics[1]
-		}
-
+func StrToJsonStr(str string) (jsonStr string) {
+	if str == "" {
+		Error.Fatalln("str is null!")
 	}
-	//fmt.Print(metrics_key)
-	//fmt.Print(metrics_value)
-	//fmt.Print(metricsResponse)
-	return metrics_key, metrics_value
+	return strings.ReplaceAll(strings.ReplaceAll("{\""+strings.Split(str,"{")[1],"=","\":"),",",",\"")
+}
+func StrToMap(str string) (dat map[string]string) {
+	if err := json.Unmarshal([]byte(StrToJsonStr(str)), &dat); err != nil {
+		Error.Fatalln(err)
+	}
+	return dat
 }
