@@ -6,5 +6,6 @@ RUN go build -o /go/app
 FROM harbor.wise-paas.io/distroless/base:latest as prod-env
 WORKDIR /go/
 COPY --from=build-env /go/app .
+COPY --from=build-env /go/src/kong-prometheus-exporter .
 EXPOSE 8080
 CMD ["./app"]
