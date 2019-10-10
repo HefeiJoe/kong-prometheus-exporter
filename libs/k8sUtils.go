@@ -22,26 +22,16 @@ func InitK8sClient() {
 	if err != nil {
 		panic(err.Error())
 	}
-	//从外部读取kubectl的config信息
-	/*config, err := clientcmd.BuildConfigFromFlags("", *Kubeconfig)
-	if err != nil {
-		panic(err.Error())
-	}
-	c, err = kubernetes.NewForConfig(config)
-	if err != nil {
-		panic(err.Error())
-	}*/
 }
-
 
 func GetKongPodIP(namespace string) (ips list.List) {
 	var ipList list.List
-	kongName:=os.Getenv("KONG_NAME")
-	if kongName == "" {
-		logger.Error("kongName cannot be empty!")
+	serviceName:=os.Getenv("SERVICE_NAME")
+	if serviceName == "" {
+		logger.Error("serviceName cannot be empty!")
 	}
-	logger.Info("kongName: ",kongName)
- 	endpoints, err := c.CoreV1().Endpoints(namespace).Get(kongName, metav1.GetOptions{})
+	logger.Info("kongName: ",serviceName)
+ 	endpoints, err := c.CoreV1().Endpoints(namespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil {
 		logger.Error(err)
 	}
