@@ -3,7 +3,9 @@ package collector
 import (
 	"github.com/wonderivan/logger"
 	"github.com/prometheus/client_golang/prometheus"
+	//"kong-prometheus-exporter/configs"
 	"kong-prometheus-exporter/libs"
+	"kong-prometheus-exporter/const"
 	"os"
 	"strconv"
 	"strings"
@@ -12,7 +14,7 @@ const (
 	BANDWIDTH = "kong_bandwidth"
 	DATASTORE_REACHABLE = "kong_datastore_reachable"
 	CONSUMER_HTTP_STATUS = "kong_consumer_http_status"
-	KONG_ROUTE_HTTP_STATUS = "kong_route_http_status"
+	ROUTE_HTTP_STATUS = "kong_route_http_status"
 	LATENCY_BUCKET = "kong_latency_bucket"
 	LATENCY_COUNT = "kong_latency_count"
 	LATENCY_SUM = "kong_latency_sum"
@@ -154,7 +156,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			k:=strings.Split(metricsList[i]," ")[0]
 			var v float64
 			var metricsValueFloat64 float64
-			if k==DATASTORE_REACHABLE{
+			if k==_const.DATASTORE_REACHABLE{
 				metricsValueFloat64, _ = strconv.ParseFloat(strings.Split(metricsList[i]," ")[1], 64)
 				newResponse = newResponse + k + " " + strconv.FormatFloat(metricsValueFloat64,'E',-1,64) +"\n"
 				e.datastore_reachable.Set(metricsValueFloat64)
@@ -174,31 +176,31 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 						}
 						newResponse = newResponse + k + " " + strconv.FormatFloat(v, 'E', -1, 64) + "\n"
 						kMap := StrToMap(k)
-						if strings.Contains(k,BANDWIDTH){
+						if strings.Contains(k,_const.BANDWIDTH){
 							e.bandwidth.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
 						}
-						if strings.Contains(k,HTTP_STATUS){
+						if strings.Contains(k,_const.ROUTE_HTTP_STATUS){
 							e.route_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["route"]).Set(v)
 						}
-						if strings.Contains(k,HTTP_STATUS){
+						if strings.Contains(k,_const.CONSUMER_HTTP_STATUS){
 							e.consumer_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["consumer"]).Set(v)
 						}
-						if strings.Contains(k,LATENCY_BUCKET){
+						if strings.Contains(k,_const.LATENCY_BUCKET){
 							e.latency_bucket.WithLabelValues(kMap["type"], kMap["service"], kMap["route"], kMap["le"]).Set(v)
 						}
-						if strings.Contains(k,LATENCY_COUNT){
+						if strings.Contains(k,_const.LATENCY_COUNT){
 							e.latency_count.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
 						}
-						if strings.Contains(k,LATENCY_SUM){
+						if strings.Contains(k,_const.LATENCY_SUM){
 							e.latency_sum.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
 						}
-						if strings.Contains(k,MEMORY_LUA_SHARED_DICT_TOTAL_BYTES){
+						if strings.Contains(k,_const.MEMORY_LUA_SHARED_DICT_TOTAL_BYTES){
 							e.memory_lua_shared_dict_total_bytes.WithLabelValues(kMap["shared_dict"]).Set(v)
 						}
-						if strings.Contains(k,NGINX_HTTP_CURRENT_CONNECTIONS){
+						if strings.Contains(k,_const.NGINX_HTTP_CURRENT_CONNECTIONS){
 							e.nginx_http_current_connections.WithLabelValues(kMap["state"]).Set(v)
 						}
-						if strings.Contains(k,NGINX_METRIC_ERRORS_TOTAL){
+						if strings.Contains(k,_const.NGINX_METRIC_ERRORS_TOTAL){
 							e.nginx_metric_errors_total.Set(v)
 						}
 					}
