@@ -136,7 +136,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		logger.Info(url)
 		response = response+ metricsResponse
 	}
-	logger.Info("response:",response)
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {
