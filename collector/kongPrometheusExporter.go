@@ -1,18 +1,12 @@
 package collector
 
 import (
-	"fmt"
+	"github.com/wonderivan/logger"
 	"github.com/prometheus/client_golang/prometheus"
 	"kong-prometheus-exporter/libs"
-	"log"
 	"os"
 	"strconv"
 	"strings"
-)
-var (
-	Info    *log.Logger
-	Warning *log.Logger
-	Error   *log.Logger
 )
 const (
 	BANDWIDTH            = "kong_bandwidth"
@@ -105,30 +99,28 @@ func NewExporter(metricsPrefix string) *Exporter {
 }
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
-	libs.Init(os.Stdout, os.Stdout, os.Stderr)
 	var url string
 	var response string
 	var newResponse string
 	namespace:=os.Getenv("NAMESPACE")
-	//namespace = "ensaas-framework"
 	port:=os.Getenv("PORT")
-	//port="8001"
 	if namespace == "" {
-		Error.Println("Namespace cannot be empty!")
+		logger.Error("Namespace cannot be empty!")
 	}
 	if port == "" {
-		Error.Println("Port cannot be empty!")
+		logger.Error("Port cannot be empty!")
 	}
 	ips := libs.GetKongPodIP(namespace)
+	if ips.Len()==0{
+		logger.Error("ips is null!")
+	}
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=Get(url)
-		fmt.Println(url)
+		logger.Info(url)
 		response = response+ metricsResponse
 	}
-	fmt.Println("response",response)
-	fmt.Println("*************************")
-	fmt.Println(response)
+	logger.Info("response:",response)
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {

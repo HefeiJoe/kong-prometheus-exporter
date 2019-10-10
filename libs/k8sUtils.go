@@ -1,6 +1,7 @@
 package libs
 
 import (
+	"github.com/wonderivan/logger"
 	"container/list"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -22,7 +23,7 @@ func InitK8sClient() {
 		panic(err.Error())
 	}
 	//从外部读取kubectl的config信息
-/*	config, err := clientcmd.BuildConfigFromFlags("", *Kubeconfig)
+	/*config, err := clientcmd.BuildConfigFromFlags("", *Kubeconfig)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -36,8 +37,14 @@ func InitK8sClient() {
 func GetKongPodIP(namespace string) (ips list.List) {
 	var ipList list.List
 	kongName:=os.Getenv("KONG_NAME")
-	//kongName="kong-kong-admin"
- 	endpoints, _ := c.CoreV1().Endpoints(namespace).Get(kongName, metav1.GetOptions{})
+	if kongName == "" {
+		logger.Error("kongName cannot be empty!")
+	}
+	logger.Info("kongName: ",kongName)
+ 	endpoints, err := c.CoreV1().Endpoints(namespace).Get(kongName, metav1.GetOptions{})
+	if err != nil {
+		logger.Error(err)
+	}
 	for _, endpoint := range endpoints.Subsets {
 		for _, ip := range endpoint.Addresses {
 			ipList.PushFront(ip.IP)
