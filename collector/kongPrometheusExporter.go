@@ -132,7 +132,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
-		metricsResponse :=Get(url)
+		metricsResponse :=libs.Get(url)
 		logger.Info(url)
 		response = response+ metricsResponse
 	}
