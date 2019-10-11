@@ -2,7 +2,6 @@ package collector
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/wonderivan/logger"
 	"kong-prometheus-exporter/configs"
 	"kong-prometheus-exporter/const"
 	"kong-prometheus-exporter/libs"
