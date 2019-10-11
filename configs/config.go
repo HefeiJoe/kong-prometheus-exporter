@@ -3,18 +3,18 @@ package configs
 import (
 	"os"
 	"github.com/wonderivan/logger"
-       )
+)
+var Cf *Conf
 
-func InitConfig() Conf {
+func InitConfig() {
 	var c Conf
-	c.getConfigFromEnv()
-	return c
+	Cf = c.getConfigFromEnv()
 }
 
 type Conf struct {
-	serviceName     string
-	namespace string
-	port string
+	ServiceName     string
+	Namespace string
+	Port string
 }
 
 
@@ -31,8 +31,9 @@ func (c *Conf) getConfigFromEnv() *Conf {
 	if port == "" {
 		logger.Error("port is empty")
 	}
-	c.serviceName=serviceName
-	c.namespace = namespace
-	c.port = port
+	cf := &Conf{}
+	cf.ServiceName=serviceName
+	cf.Namespace = namespace
+	cf.Port = port
 	return c
 }
