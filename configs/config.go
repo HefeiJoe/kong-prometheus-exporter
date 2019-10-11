@@ -35,5 +35,5 @@ func (c *Conf) getConfigFromEnv() *Conf {
 	cf.ServiceName=serviceName
 	cf.Namespace = namespace
 	cf.Port = port
-	return c
+	return cf
 }
