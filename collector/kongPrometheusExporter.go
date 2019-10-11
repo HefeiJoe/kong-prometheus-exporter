@@ -1,18 +1,17 @@
 package collector
 
 import (
-	"github.com/wonderivan/logger"
 	"github.com/prometheus/client_golang/prometheus"
-	//"kong-prometheus-exporter/configs"
-	"kong-prometheus-exporter/libs"
+	"github.com/wonderivan/logger"
+	"kong-prometheus-exporter/configs"
 	"kong-prometheus-exporter/const"
-	"os"
+	"kong-prometheus-exporter/libs"
 	"strconv"
 	"strings"
 )
 type Exporter struct {
 	bandwidth prometheus.GaugeVec
-	datastore_reachable prometheus.Gauge
+	datastore_reachable prometheus.GaugeVec
 	consumer_http_status prometheus.GaugeVec
 	route_http_status prometheus.GaugeVec
 	latency_bucket prometheus.GaugeVec
@@ -20,7 +19,7 @@ type Exporter struct {
 	latency_sum prometheus.GaugeVec
 	memory_lua_shared_dict_total_bytes prometheus.GaugeVec
 	nginx_http_current_connections prometheus.GaugeVec
-	nginx_metric_errors_total prometheus.Gauge
+	nginx_metric_errors_total prometheus.GaugeVec
 }
 
 func NewExporter(metricsPrefix string) *Exporter {
@@ -32,11 +31,15 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
+			"mtype",
 		})
-	datastore_reachable := prometheus.NewGauge(prometheus.GaugeOpts{
+	datastore_reachable := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "datastore_reachable",
-		Help:      "This is a kong datastore_reachable metric"})
+		Help:      "This is a kong datastore_reachable metric"},
+		[]string{
+			"mtype",
+		})
 	route_http_status := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "route_http_status",
@@ -45,6 +48,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"code",
 			"service",
 			"route",
+			"mtype",
 		})
 	consumer_http_status := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -54,6 +58,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"code",
 			"service",
 			"consumer",
+			"mtype",
 		})
 	latency_bucket := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -64,6 +69,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"service",
 			"route",
 			"le",
+			"mtype",
 		})
 	latency_count := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -73,6 +79,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
+			"mtype",
 		})
 	latency_sum := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -82,6 +89,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
+			"mtype",
 		})
 	memory_lua_shared_dict_total_bytes := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -89,16 +97,22 @@ func NewExporter(metricsPrefix string) *Exporter {
 		Help:      "This is a kong memory_lua_shared_dict_total_bytes metric"},
 		[]string{
 			"shared_dict",
+			"mtype",
 		})
 	nginx_http_current_connections := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "nginx_http_current_connections",
 		Help:      "This is a kong nginx_http_current_connections metric"},
-		[]string{"state"})
-	nginx_metric_errors_total := prometheus.NewGauge(prometheus.GaugeOpts{
+		[]string{
+			"state",
+			"mtype",})
+	nginx_metric_errors_total := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "nginx_metric_errors_total",
-		Help:      "This is a kong nginx_metric_errors_total metric"})
+		Help:      "This is a kong nginx_metric_errors_total metric"},
+		[]string{
+			"mtype",
+		})
 
 	return &Exporter{
 		bandwidth: bandwidth,
@@ -117,25 +131,35 @@ func NewExporter(metricsPrefix string) *Exporter {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var url string
 	var response string
-	var newResponse string
-	namespace:=os.Getenv("NAMESPACE")
-	port:=os.Getenv("PORT")
-	if namespace == "" {
-		logger.Error("Namespace cannot be empty!")
-	}
-	if port == "" {
-		logger.Error("Port cannot be empty!")
-	}
+	namespace:=configs.Cf.Namespace
+	port:=configs.Cf.Port
 	ips := libs.GetKongPodIP(namespace)
-	if ips.Len()==0{
-		logger.Error("ips is null!")
-	}
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=libs.Get(url)
 		logger.Info(url)
+		collectMetrics(response, url, e)
 		response = response+ metricsResponse
 	}
+<<<<<<< HEAD
+	collectMetrics(response, "total", e)
+	e.bandwidth.Collect(ch)
+	e.datastore_reachable.Collect(ch)
+	e.route_http_status.Collect(ch)
+	e.consumer_http_status.Collect(ch)
+	e.latency_bucket.Collect(ch)
+	e.latency_count.Collect(ch)
+	e.latency_sum.Collect(ch)
+	e.memory_lua_shared_dict_total_bytes.Collect(ch)
+	e.nginx_http_current_connections.Collect(ch)
+	e.nginx_metric_errors_total.Collect(ch)
+
+}
+
+func collectMetrics(response string,mtp string,e *Exporter){
+	var newResponse string
+=======
+>>>>>>> 473d5e7da5384c9e49121ba8b24c814816a6b061
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {
@@ -145,7 +169,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 			if k==_const.DATASTORE_REACHABLE{
 				metricsValueFloat64, _ = strconv.ParseFloat(strings.Split(metricsList[i]," ")[1], 64)
 				newResponse = newResponse + k + " " + strconv.FormatFloat(metricsValueFloat64,'E',-1,64) +"\n"
-				e.datastore_reachable.Set(metricsValueFloat64)
+				e.datastore_reachable.WithLabelValues(mtp).Set(metricsValueFloat64)
 			}else {
 				if strings.HasPrefix(k, "#") {
 					if !strings.Contains(newResponse, metricsList[i]) {
@@ -163,50 +187,38 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 						newResponse = newResponse + k + " " + strconv.FormatFloat(v, 'E', -1, 64) + "\n"
 						kMap := libs.StrToMap(k)
 						if strings.Contains(k,_const.BANDWIDTH){
-							e.bandwidth.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
+							e.bandwidth.WithLabelValues(kMap["type"], kMap["service"], kMap["route"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.ROUTE_HTTP_STATUS){
-							e.route_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["route"]).Set(v)
+							e.route_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["route"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.CONSUMER_HTTP_STATUS){
-							e.consumer_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["consumer"]).Set(v)
+							e.consumer_http_status.WithLabelValues(kMap["code"], kMap["service"], kMap["consumer"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.LATENCY_BUCKET){
-							e.latency_bucket.WithLabelValues(kMap["type"], kMap["service"], kMap["route"], kMap["le"]).Set(v)
+							e.latency_bucket.WithLabelValues(kMap["type"], kMap["service"], kMap["route"], kMap["le"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.LATENCY_COUNT){
-							e.latency_count.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
+							e.latency_count.WithLabelValues(kMap["type"], kMap["service"], kMap["route"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.LATENCY_SUM){
-							e.latency_sum.WithLabelValues(kMap["type"], kMap["service"], kMap["route"]).Set(v)
+							e.latency_sum.WithLabelValues(kMap["type"], kMap["service"], kMap["route"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.MEMORY_LUA_SHARED_DICT_TOTAL_BYTES){
-							e.memory_lua_shared_dict_total_bytes.WithLabelValues(kMap["shared_dict"]).Set(v)
+							e.memory_lua_shared_dict_total_bytes.WithLabelValues(kMap["shared_dict"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.NGINX_HTTP_CURRENT_CONNECTIONS){
-							e.nginx_http_current_connections.WithLabelValues(kMap["state"]).Set(v)
+							e.nginx_http_current_connections.WithLabelValues(kMap["state"],mtp).Set(v)
 						}
 						if strings.Contains(k,_const.NGINX_METRIC_ERRORS_TOTAL){
-							e.nginx_metric_errors_total.Set(v)
+							e.nginx_metric_errors_total.WithLabelValues(mtp).Set(v)
 						}
 					}
 				}
 			}
 		}
 	}
-	e.bandwidth.Collect(ch)
-	e.datastore_reachable.Collect(ch)
-	e.route_http_status.Collect(ch)
-	e.consumer_http_status.Collect(ch)
-	e.latency_bucket.Collect(ch)
-	e.latency_count.Collect(ch)
-	e.latency_sum.Collect(ch)
-	e.memory_lua_shared_dict_total_bytes.Collect(ch)
-	e.nginx_http_current_connections.Collect(ch)
-	e.nginx_metric_errors_total.Collect(ch)
-
 }
-
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.bandwidth.Describe(ch)
 	e.datastore_reachable.Describe(ch)
