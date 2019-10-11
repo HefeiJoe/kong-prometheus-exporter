@@ -141,7 +141,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		collectMetrics(response, url, e)
 		response = response+ metricsResponse
 	}
-<<<<<<< HEAD
 	collectMetrics(response, "total", e)
 	e.bandwidth.Collect(ch)
 	e.datastore_reachable.Collect(ch)
@@ -158,8 +157,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 func collectMetrics(response string,mtp string,e *Exporter){
 	var newResponse string
-=======
->>>>>>> 473d5e7da5384c9e49121ba8b24c814816a6b061
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {

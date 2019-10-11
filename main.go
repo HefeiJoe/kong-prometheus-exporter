@@ -5,6 +5,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"kong-prometheus-exporter/collector"
+	"kong-prometheus-exporter/configs"
 	"kong-prometheus-exporter/libs"
 	"net/http"
 )
@@ -17,6 +18,7 @@ func main() {
 
 	//libs.InitConfigConfig()
 	libs.InitK8sClient()
+	configs.InitConfig()
 
 	// Define parameters
 	metricsPath := "/metrics"

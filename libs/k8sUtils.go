@@ -1,12 +1,12 @@
 package libs
 
 import (
-	"github.com/wonderivan/logger"
 	"container/list"
+	"github.com/wonderivan/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"os"
+	"kong-prometheus-exporter/configs"
 )
 
 var (
@@ -26,7 +26,7 @@ func InitK8sClient() {
 
 func GetKongPodIP(namespace string) (ips list.List) {
 	var ipList list.List
-	serviceName:=os.Getenv("SERVICE_NAME")
+	serviceName:=configs.Cf.ServiceName
 	if serviceName == "" {
 		logger.Error("serviceName cannot be empty!")
 	}
