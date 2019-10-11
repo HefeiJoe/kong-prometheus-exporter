@@ -30,14 +30,14 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
-			"mtype",
+			"podip",
 		})
 	datastore_reachable := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "datastore_reachable",
 		Help:      "This is a kong datastore_reachable metric"},
 		[]string{
-			"mtype",
+			"podip",
 		})
 	route_http_status := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -47,7 +47,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"code",
 			"service",
 			"route",
-			"mtype",
+			"podip",
 		})
 	consumer_http_status := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -57,7 +57,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"code",
 			"service",
 			"consumer",
-			"mtype",
+			"podip",
 		})
 	latency_bucket := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -68,7 +68,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"service",
 			"route",
 			"le",
-			"mtype",
+			"podip",
 		})
 	latency_count := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -78,7 +78,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
-			"mtype",
+			"podip",
 		})
 	latency_sum := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -88,7 +88,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"type",
 			"service",
 			"route",
-			"mtype",
+			"podip",
 		})
 	memory_lua_shared_dict_total_bytes := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -96,7 +96,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 		Help:      "This is a kong memory_lua_shared_dict_total_bytes metric"},
 		[]string{
 			"shared_dict",
-			"mtype",
+			"podip",
 		})
 	nginx_http_current_connections := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -104,13 +104,13 @@ func NewExporter(metricsPrefix string) *Exporter {
 		Help:      "This is a kong nginx_http_current_connections metric"},
 		[]string{
 			"state",
-			"mtype",})
+			"podip",})
 	nginx_metric_errors_total := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
 		Name:      "nginx_metric_errors_total",
 		Help:      "This is a kong nginx_metric_errors_total metric"},
 		[]string{
-			"mtype",
+			"podip",
 		})
 
 	return &Exporter{
@@ -136,8 +136,8 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=libs.Get(url)
+		collectMetrics(metricsResponse, ip.Value.(string), e)
 		response = response+ metricsResponse
-		collectMetrics(response, ip.Value.(string), e)
 	}
 	collectMetrics(response, "total", e)
 	e.bandwidth.Collect(ch)
