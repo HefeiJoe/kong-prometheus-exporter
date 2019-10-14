@@ -157,6 +157,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 func collectMetrics(response string,mtp string,e *Exporter){
 	var newResponse string
+	resetMetrics(e)
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {
@@ -215,6 +216,18 @@ func collectMetrics(response string,mtp string,e *Exporter){
 			}
 		}
 	}
+}
+func resetMetrics(e *Exporter){
+	e.bandwidth.Reset()
+	e.datastore_reachable.Reset()
+	e.route_http_status.Reset()
+	e.consumer_http_status.Reset()
+	e.latency_bucket.Reset()
+	e.latency_count.Reset()
+	e.latency_sum.Reset()
+	e.memory_lua_shared_dict_total_bytes.Reset()
+	e.nginx_http_current_connections.Reset()
+	e.nginx_metric_errors_total.Reset()
 }
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.bandwidth.Describe(ch)
