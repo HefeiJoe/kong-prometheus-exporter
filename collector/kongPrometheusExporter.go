@@ -136,7 +136,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=libs.Get(url)
-		collectMetrics(metricsResponse, ip.Value.(string), e)
+		if ips.Len()>1 {
+			collectMetrics(metricsResponse, ip.Value.(string), e)
+		}
 		response = response+ metricsResponse
 	}
 	collectMetrics(response, "total", e)
