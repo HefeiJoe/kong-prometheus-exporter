@@ -130,6 +130,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var url string
 	var response string
+	resetMetrics(e)
 	namespace:=configs.Cf.Namespace
 	port:=configs.Cf.Port
 	ips := libs.GetKongPodIP(namespace)
@@ -157,7 +158,6 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 
 func collectMetrics(response string,mtp string,e *Exporter){
 	var newResponse string
-	resetMetrics(e)
 	if response != "" {
 		metricsList :=strings.Split(response,"\n")
 		for i := 0; i < len(metricsList)-1; i++ {
