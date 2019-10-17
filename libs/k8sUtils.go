@@ -16,11 +16,11 @@ var (
 func InitK8sClient() {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err.Error())
+		logger.Error(err.Error())
 	}
 	c, err = kubernetes.NewForConfig(config)
 	if err != nil {
-		panic(err.Error())
+		logger.Error(err.Error())
 	}
 }
 
@@ -30,7 +30,7 @@ func GetKongPodIP(namespace string) (ips list.List) {
 	if serviceName == "" {
 		logger.Error("serviceName cannot be empty!")
 	}
-	logger.Info("kongName: ",serviceName)
+	logger.Info("Get Kong PodIP Start!")
  	endpoints, err := c.CoreV1().Endpoints(namespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil {
 		logger.Error(err)
