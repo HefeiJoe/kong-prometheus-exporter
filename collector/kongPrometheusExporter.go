@@ -137,12 +137,10 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
 		metricsResponse :=libs.Get(url)
-		if ips.Len()>1 {
-			collectMetrics(metricsResponse, ip.Value.(string), e)
-		}
+		collectMetrics(metricsResponse, ip.Value.(string), e)
 		response = response+ metricsResponse
 	}
-	collectMetrics(response, "total", e)
+	//collectMetrics(response, "total", e)
 	e.bandwidth.Collect(ch)
 	e.datastore_reachable.Collect(ch)
 	e.route_http_status.Collect(ch)
