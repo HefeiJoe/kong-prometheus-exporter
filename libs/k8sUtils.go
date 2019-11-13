@@ -6,7 +6,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"kong-prometheus-exporter/configs"
 )
 
 var (
@@ -24,13 +23,8 @@ func InitK8sClient() {
 	}
 }
 
-func GetKongPodIP(namespace string) (ips list.List) {
+func GetKongPodIP(namespace string, serviceName string) (ips list.List) {
 	var ipList list.List
-	serviceName:=configs.Cf.ServiceName
-	if serviceName == "" {
-		logger.Error("serviceName cannot be empty!")
-	}
-	logger.Info("Get Kong PodIP Start!")
  	endpoints, err := c.CoreV1().Endpoints(namespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil {
 		logger.Error(err)

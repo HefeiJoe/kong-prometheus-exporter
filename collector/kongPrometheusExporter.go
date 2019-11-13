@@ -12,6 +12,7 @@ type Exporter struct {
 	bandwidth prometheus.GaugeVec
 	datastore_reachable prometheus.GaugeVec
 	consumer_http_status prometheus.GaugeVec
+	consumer_rate_limiting prometheus.GaugeVec
 	route_http_status prometheus.GaugeVec
 	latency_bucket prometheus.GaugeVec
 	latency_count prometheus.GaugeVec
@@ -58,6 +59,14 @@ func NewExporter(metricsPrefix string) *Exporter {
 			"service",
 			"consumer",
 			"podip",
+		})
+	consumer_rate_limiting := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsPrefix,
+		Name:      "consumer_rate_limiting",
+		Help:      "This is a kong consumer_rate_limiting metric"},
+		[]string{
+			"consumer",
+			"period",
 		})
 	latency_bucket := *prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsPrefix,
@@ -118,6 +127,7 @@ func NewExporter(metricsPrefix string) *Exporter {
 		datastore_reachable: datastore_reachable,
 		route_http_status: route_http_status,
 		consumer_http_status: consumer_http_status,
+		consumer_rate_limiting: consumer_rate_limiting,
 		latency_bucket:latency_bucket,
 		latency_count:latency_count,
 		latency_sum:latency_sum,
@@ -129,22 +139,37 @@ func NewExporter(metricsPrefix string) *Exporter {
 
 func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var url string
+	var urlPlugins string
 	var response string
 	resetMetrics(e)
 	namespace:=configs.Cf.Namespace
+	serviceName:=configs.Cf.ServiceName
 	port:=configs.Cf.Port
-	ips := libs.GetKongPodIP(namespace)
+	kongAdminPort:=configs.Cf.KongAdminPort
+	ips := libs.GetKongPodIP(namespace, serviceName+"-proxy")
 	for ip := ips.Front(); ip != nil; ip = ip.Next() {
 		url = "http://" + ip.Value.(string) + ":"+port+"/metrics"
-		metricsResponse :=libs.Get(url)
+		metricsResponse :=libs.GetStr(url)
 		collectMetrics(metricsResponse, ip.Value.(string), e)
 		response = response+ metricsResponse
 	}
-	//collectMetrics(response, "total", e)
+	kongAdminIps:=libs.GetKongPodIP(namespace, serviceName+"-admin")
+	for kongAdminIp := kongAdminIps.Front(); kongAdminIp != nil; kongAdminIp = kongAdminIp.Next() {
+		url = "http://" + kongAdminIp.Value.(string) + ":"+kongAdminPort+"/plugins"
+		rsps :=libs.GetStruct(urlPlugins).Data
+		if len(rsps)>0{
+			for i:=0; i < len(rsps); i++ {
+				if strings.Contains(rsps[i].Name,_const.RATE_LIMITING){
+					e.consumer_rate_limiting.WithLabelValues((rsps[i].Consumer)["id"],"second").Set(((rsps[i].Config)["minute"]).(float64))
+				}
+			}
+		}
+	}
 	e.bandwidth.Collect(ch)
 	e.datastore_reachable.Collect(ch)
 	e.route_http_status.Collect(ch)
 	e.consumer_http_status.Collect(ch)
+	e.consumer_rate_limiting.Collect(ch)
 	e.latency_bucket.Collect(ch)
 	e.latency_count.Collect(ch)
 	e.latency_sum.Collect(ch)
@@ -220,6 +245,7 @@ func resetMetrics(e *Exporter){
 	e.datastore_reachable.Reset()
 	e.route_http_status.Reset()
 	e.consumer_http_status.Reset()
+	e.consumer_rate_limiting.Reset()
 	e.latency_bucket.Reset()
 	e.latency_count.Reset()
 	e.latency_sum.Reset()
@@ -232,6 +258,7 @@ func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	e.datastore_reachable.Describe(ch)
 	e.route_http_status.Describe(ch)
 	e.consumer_http_status.Describe(ch)
+	e.consumer_rate_limiting.Describe(ch)
 	e.latency_bucket.Describe(ch)
 	e.latency_count.Describe(ch)
 	e.latency_sum.Describe(ch)

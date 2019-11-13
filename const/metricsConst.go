@@ -11,5 +11,6 @@ const (
 	MEMORY_LUA_SHARED_DICT_TOTAL_BYTES = "kong_memory_lua_shared_dict_total_bytes"
 	NGINX_HTTP_CURRENT_CONNECTIONS = "kong_nginx_http_current_connections"
 	NGINX_METRIC_ERRORS_TOTAL = "kong_nginx_metric_errors_total"
+	RATE_LIMITING = "rate-limiting"
 
 )
