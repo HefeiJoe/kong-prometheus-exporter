@@ -2,6 +2,7 @@ package collector
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/wonderivan/logger"
 	"kong-prometheus-exporter/configs"
 	"kong-prometheus-exporter/const"
 	"kong-prometheus-exporter/libs"
@@ -154,8 +155,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		response = response+ metricsResponse
 	}
 	kongAdminIps:=libs.GetKongPodIP(namespace, serviceName+"-admin")
-	for kongAdminIp := kongAdminIps.Front(); kongAdminIp != nil; kongAdminIp = kongAdminIp.Next() {
-		url = "http://" + kongAdminIp.Value.(string) + ":"+kongAdminPort+"/plugins"
+	if kongAdminIps.Len()>0{
+		urlPlugins = "http://" + kongAdminIps.Front().Value.(string) + ":"+kongAdminPort+"/plugins"
+		logger.Info("urlPlugins: "+urlPlugins)
 		rsps :=libs.GetStruct(urlPlugins).Data
 		if len(rsps)>0{
 			for i:=0; i < len(rsps); i++ {
