@@ -160,6 +160,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		if len(rsps)>0{
 			for i:=0; i < len(rsps); i++ {
 				if strings.Contains(rsps[i].Name,_const.RATE_LIMITING) && rsps[i].Consumer!=nil && (rsps[i].Config)["second"]!=nil{
+					e.consumer_rate_limiting.Reset()
 					e.consumer_rate_limiting.WithLabelValues((rsps[i].Consumer)["id"],"second").Set(((rsps[i].Config)["second"]).(float64))
 				}
 			}
@@ -245,7 +246,7 @@ func resetMetrics(e *Exporter){
 	e.datastore_reachable.Reset()
 	e.route_http_status.Reset()
 	e.consumer_http_status.Reset()
-	e.consumer_rate_limiting.Reset()
+	//e.consumer_rate_limiting.Reset()
 	e.latency_bucket.Reset()
 	e.latency_count.Reset()
 	e.latency_sum.Reset()
