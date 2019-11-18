@@ -158,9 +158,9 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 		urlPlugins = "http://" + kongAdminIps.Front().Value.(string) + ":"+kongAdminPort+"/plugins"
 		rsps :=libs.GetStruct(urlPlugins).Data
 		if len(rsps)>0{
+			e.consumer_rate_limiting.Reset()
 			for i:=0; i < len(rsps); i++ {
 				if strings.Contains(rsps[i].Name,_const.RATE_LIMITING) && rsps[i].Consumer!=nil && (rsps[i].Config)["second"]!=nil{
-					e.consumer_rate_limiting.Reset()
 					e.consumer_rate_limiting.WithLabelValues((rsps[i].Consumer)["id"],"second").Set(((rsps[i].Config)["second"]).(float64))
 				}
 			}
