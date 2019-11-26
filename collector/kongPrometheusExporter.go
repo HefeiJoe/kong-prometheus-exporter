@@ -141,6 +141,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	var url string
 	var urlPlugins string
 	var response string
+	b := true
 	resetMetrics(e)
 	namespace:=configs.Cf.Namespace
 	serviceName:=configs.Cf.ServiceName
@@ -157,11 +158,12 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	if kongAdminIps.Len()>0{
 		urlPlugins = "http://" + kongAdminIps.Front().Value.(string) + ":"+kongAdminPort+"/plugins"
 		rsps :=libs.GetStruct(urlPlugins).Data
-		if len(rsps)>0{
+		if len(rsps)>0 && b{
 			e.consumer_rate_limiting.Reset()
 			for i:=0; i < len(rsps); i++ {
 				if strings.Contains(rsps[i].Name,_const.RATE_LIMITING) && rsps[i].Consumer!=nil && (rsps[i].Config)["second"]!=nil{
 					e.consumer_rate_limiting.WithLabelValues((rsps[i].Consumer)["id"],"second").Set(((rsps[i].Config)["second"]).(float64))
+					b = false
 				}
 			}
 		}
