@@ -12,10 +12,7 @@ import (
 
 func main() {
 	fmt.Println(`
-  This is a kong example of prometheus exporter
-  Access: http://0.0.0.0:8080
-  `)
-
+  This is a kong example of prometheus exporter`)
 	//libs.InitConfigConfig()
 	libs.InitK8sClient()
 	configs.InitConfig()
@@ -32,6 +29,8 @@ func main() {
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(exporter)
 	http.Handle(metricsPath, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+	fmt.Println(`
+  Access: http://0.0.0.0:8080`)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
 			<head><title>A Prometheus kong Exporter</title></head>
